@@ -54,10 +54,13 @@ const CallPage = () => {
       const form = new FormData();
       form.append("file", blob, "frame.jpg");
 
-      const res = await fetch("http://localhost:9000/detect", {
-        method: "POST",
-        body: form,
-      });
+      const res = await fetch(
+        "https://nick-localhost-sign-detect.hf.space/detect",
+        {
+          method: "POST",
+          body: form,
+        },
+      );
 
       const data = await res.json();
       const dets = Array.isArray(data?.detections) ? data.detections : [];
@@ -105,7 +108,7 @@ const CallPage = () => {
           }
         },
         "image/jpeg",
-        0.8
+        0.8,
       );
     }, 100);
 

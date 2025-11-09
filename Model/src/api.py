@@ -6,34 +6,74 @@ import numpy as np
 from model import DETR
 from utils.setup import get_classes
 from typing import List, Dict
+import os, requests
+# from dotenv import load_dotenv
+
+# load_dotenv()  # reads .env file
+
 
 app = FastAPI()
 
 origins = [
-    "http://localhost:5173",  # frontend origin
+    "https://sign-detection.vercel.app",  # frontend origin
     # you can add more allowed origins here
 ]
+
+# env = os.getenv("ENV", "development")
+# frontend_url = os.getenv("FRONTEND_URL", "http://localhost:5173")
+
+# if env == "development":
+#     origins = [frontend_url]
+# else:
+#     # In production (Render), allow the deployed frontend
+#     origins = [frontend_url]
 
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,  # or ["*"] for all origins
+    allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"],     # GET, POST, etc.
-    allow_headers=["*"],     # headers like Content-Type
+    allow_methods=["*"],  # GET, POST, etc.
+    allow_headers=["*"],  # headers like Content-Type
 )
 
+# model = DETR(num_classes=3)
+# model.eval()
+# model.load_pretrained('pretrained/4426_model.pt')
+
+
+MODEL_PATH = "pretrained/4426_model.pt"
+MODEL_URL = "https://huggingface.co/Mandarwork/sign/resolve/main/4426_model.pt"
+
+
+# Ensure model directory exists
+os.makedirs(os.path.dirname(MODEL_PATH), exist_ok=True)
+
+# Download model file if missing
+if not os.path.exists(MODEL_PATH):
+    print(f"Model file not found. Downloading from {MODEL_URL} ...")
+    response = requests.get(MODEL_URL, stream=True)
+    with open(MODEL_PATH, "wb") as f:
+        for chunk in response.iter_content(chunk_size=8192):
+            if chunk:
+                f.write(chunk)
+    print("Model downloaded successfully.")
+
+# Now load it
 model = DETR(num_classes=3)
 model.eval()
-model.load_pretrained('pretrained/4426_model.pt')
+model.load_pretrained(MODEL_PATH)
+
+
 CLASSES = get_classes()
 
 # Adjustable inference parameters
 SCORE_THRESHOLD = 0.90  # confidence threshold for keeping detections
-MAX_DETECTIONS = 5      # safety cap
+MAX_DETECTIONS = 5  # safety cap
 
 MEAN = torch.tensor([0.485, 0.456, 0.406]).view(3, 1, 1)
 STD = torch.tensor([0.229, 0.224, 0.225]).view(3, 1, 1)
+
 
 def run_inference(frame: np.ndarray) -> List[Dict]:
     """Run model inference on a BGR frame and return filtered detections.
@@ -53,8 +93,8 @@ def run_inference(frame: np.ndarray) -> List[Dict]:
     with torch.no_grad():
         outputs = model(img)
 
-    logits = outputs['pred_logits'][0]              # (num_queries, num_classes+1)
-    boxes = outputs['pred_boxes'][0]                # (num_queries, 4) in cx,cy,w,h normalized
+    logits = outputs["pred_logits"][0]  # (num_queries, num_classes+1)
+    boxes = outputs["pred_boxes"][0]  # (num_queries, 4) in cx,cy,w,h normalized
 
     probs = logits.softmax(-1)
     scores, labels = probs.max(-1)
@@ -82,11 +122,13 @@ def run_inference(frame: np.ndarray) -> List[Dict]:
         x2 = max(0, min(orig_w - 1, x2))
         y2 = max(0, min(orig_h - 1, y2))
 
-        detections.append({
-            "label": CLASSES[cls_id],
-            "score": float(score),
-            "bbox": [float(x1), float(y1), float(x2), float(y2)]
-        })
+        detections.append(
+            {
+                "label": CLASSES[cls_id],
+                "score": float(score),
+                "bbox": [float(x1), float(y1), float(x2), float(y2)],
+            }
+        )
 
     # Sort by score desc and cap
     detections.sort(key=lambda d: d["score"], reverse=True)
@@ -94,43 +136,6 @@ def run_inference(frame: np.ndarray) -> List[Dict]:
         detections = detections[:MAX_DETECTIONS]
 
     return detections
-
-
-# def run_inference(frame):
-#     img = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-#     img = cv2.resize(img, (224,224))
-#     img = torch.tensor(img, dtype=torch.float32).permute(2,0,1).unsqueeze(0) / 255.0
-
-#     with torch.no_grad():
-#         outputs = model(img)
-
-#     logits = outputs['pred_logits'][0]
-#     boxes = outputs['pred_boxes'][0]
-
-#     probs = logits.softmax(-1)
-#     scores, labels = probs.max(-1)
-
-#     results = []
-#     for i in range(len(scores)):
-#         cls_id = labels[i].item()
-
-#         if cls_id >= len(CLASSES):
-#             continue
-
-#         # threshold changed
-#         if scores[i] < 0.90:
-#             continue
-
-#         x_center, y_center, w, h = boxes[i]
-#         results.append({
-#             "label": CLASSES[labels[i].item()],
-#             "score": float(scores[i].item()),
-#             "bbox": [float(x_center), float(y_center), float(w), float(h)]
-#         })
-
-#     # no detection = send empty list
-#     return results
-
 
 
 @app.post("/detect")
@@ -145,4 +150,3 @@ async def detect(file: UploadFile = File(...)):
         return {"detections": []}
     detections = run_inference(frame)
     return {"detections": detections}
-
