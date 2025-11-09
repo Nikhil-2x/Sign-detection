@@ -36,43 +36,48 @@ const CallPage = () => {
     enabled: !!user,
   });
 
-  // Gesture detections state with auto-clear
-  const [detections, setDetections] = useState([]); // [{label, score, bbox:[x1,y1,x2,y2]}]
+  const [detections, setDetections] = useState([]);
   const clearTimerRef = useRef(null);
   const requestInFlightRef = useRef(false);
   const lastSentRef = useRef(0);
 
   const clearDetectionsSoon = () => {
     if (clearTimerRef.current) clearTimeout(clearTimerRef.current);
-    clearTimerRef.current = setTimeout(() => setDetections([]), 800); // clears if no new results
+    clearTimerRef.current = setTimeout(() => setDetections([]), 800);
   };
 
   const sendFrame = useCallback(async (blob) => {
-    if (requestInFlightRef.current) return; // prevent overlap
+    if (requestInFlightRef.current) return;
     requestInFlightRef.current = true;
     try {
       const form = new FormData();
       form.append("file", blob, "frame.jpg");
 
       const res = await fetch(
+<<<<<<< HEAD
         "https://nick-localhost-sign-detect.hf.space/detect",
         {
           method: "POST",
           body: form,
         },
+=======
+        "https://sign-detection-url.onrender.com/detect",
+        {
+          method: "POST",
+          body: form,
+        }
+>>>>>>> 55061f5fffa3be41316a11563a193ac1069c183a
       );
 
       const data = await res.json();
       const dets = Array.isArray(data?.detections) ? data.detections : [];
-      // Update UI and schedule clear if nothing follows
+
       setDetections(dets);
       if (dets.length === 0) {
         clearDetectionsSoon();
       } else {
-        // refresh clear in case stream pauses
         clearDetectionsSoon();
       }
-      // console.log("AI:", dets);
     } catch {
       // swallow network/model errors to keep UI responsive
     } finally {
@@ -81,8 +86,7 @@ const CallPage = () => {
   }, []);
 
   useEffect(() => {
-    // Throttle capture to avoid overloading backend and network
-    const CAPTURE_INTERVAL_MS = 500; // effective rate ~2 fps
+    const CAPTURE_INTERVAL_MS = 500;
     const id = setInterval(() => {
       const now = Date.now();
       if (now - lastSentRef.current < CAPTURE_INTERVAL_MS) return;

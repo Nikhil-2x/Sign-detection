@@ -31,3 +31,4 @@ example_loggers
 
 data/
 logs/
+.env

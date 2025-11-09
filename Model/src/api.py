@@ -7,17 +7,39 @@ from model import DETR
 from utils.setup import get_classes
 from typing import List, Dict
 import os, requests
+<<<<<<< HEAD
 # from dotenv import load_dotenv
 
 # load_dotenv()  # reads .env file
+=======
+from dotenv import load_dotenv
+
+load_dotenv()  # reads .env file
+>>>>>>> 55061f5fffa3be41316a11563a193ac1069c183a
 
 
 app = FastAPI()
 
+<<<<<<< HEAD
 origins = [
     "https://sign-detection.vercel.app",  # frontend origin
     # you can add more allowed origins here
 ]
+=======
+# origins = [
+#     "http://localhost:5173",  # frontend origin
+#     # you can add more allowed origins here
+# ]
+
+env = os.getenv("ENV", "development")
+frontend_url = os.getenv("FRONTEND_URL", "http://localhost:5173")
+
+if env == "development":
+    origins = [frontend_url]
+else:
+    # In production (Render), allow the deployed frontend
+    origins = [frontend_url]
+>>>>>>> 55061f5fffa3be41316a11563a193ac1069c183a
 
 # env = os.getenv("ENV", "development")
 # frontend_url = os.getenv("FRONTEND_URL", "http://localhost:5173")
@@ -31,7 +53,11 @@ origins = [
 
 app.add_middleware(
     CORSMiddleware,
+<<<<<<< HEAD
     allow_origins=origins,
+=======
+    allow_origins=origins,  
+>>>>>>> 55061f5fffa3be41316a11563a193ac1069c183a
     allow_credentials=True,
     allow_methods=["*"],  # GET, POST, etc.
     allow_headers=["*"],  # headers like Content-Type
@@ -62,9 +88,39 @@ if not os.path.exists(MODEL_PATH):
 # Now load it
 model = DETR(num_classes=3)
 model.eval()
+<<<<<<< HEAD
 model.load_pretrained(MODEL_PATH)
 
 
+=======
+# model.load_pretrained('pretrained/4426_model.pt')
+
+
+MODEL_PATH = "pretrained/4426_model.pt"
+MODEL_URL = "https://huggingface.co/Mandarwork/sign/resolve/main/4426_model.pt"
+
+
+# Ensure model directory exists
+os.makedirs(os.path.dirname(MODEL_PATH), exist_ok=True)
+
+# Download model file if missing
+if not os.path.exists(MODEL_PATH):
+    print(f"Model file not found. Downloading from {MODEL_URL} ...")
+    response = requests.get(MODEL_URL, stream=True)
+    with open(MODEL_PATH, "wb") as f:
+        for chunk in response.iter_content(chunk_size=8192):
+            if chunk:
+                f.write(chunk)
+    print("Model downloaded successfully.")
+
+# Now load it
+model = DETR(num_classes=3)
+model.eval()
+model.load_pretrained(MODEL_PATH)
+
+
+
+>>>>>>> 55061f5fffa3be41316a11563a193ac1069c183a
 CLASSES = get_classes()
 
 # Adjustable inference parameters
@@ -138,6 +194,10 @@ def run_inference(frame: np.ndarray) -> List[Dict]:
     return detections
 
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 55061f5fffa3be41316a11563a193ac1069c183a
 @app.post("/detect")
 async def detect(file: UploadFile = File(...)):
     """Receive an uploaded frame and return gesture detections.
