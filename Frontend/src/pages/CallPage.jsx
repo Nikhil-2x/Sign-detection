@@ -36,6 +36,36 @@ const CallPage = () => {
     enabled: !!user,
   });
 
+  const sendFrame = async (blob) => {
+    const form = new FormData();
+    form.append("file", blob, "frame.jpg");
+
+    const res = await fetch("http://localhost:9000/detect", {
+      method: "POST",
+      body: form,
+    });
+
+    const data = await res.json();
+    console.log("AI:", data.detections);
+  };
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      let video = document.querySelector("video");
+
+      if (!video) return;
+
+      const canvas = document.createElement("canvas");
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      canvas.getContext("2d").drawImage(video, 0, 0);
+
+      canvas.toBlob((blob) => sendFrame(blob), "image/jpeg");
+    }, 400);
+
+    return () => clearInterval(id);
+  }, []);
+
   // useEffect(() => {
   //   const initCall = async () => {
   //     if (!tokenData.token || !user || !callId) return;
