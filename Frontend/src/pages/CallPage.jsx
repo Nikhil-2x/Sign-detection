@@ -54,19 +54,11 @@ const CallPage = () => {
       form.append("file", blob, "frame.jpg");
 
       const res = await fetch(
-<<<<<<< HEAD
         "https://nick-localhost-sign-detect.hf.space/detect",
         {
           method: "POST",
           body: form,
         },
-=======
-        "https://sign-detection-url.onrender.com/detect",
-        {
-          method: "POST",
-          body: form,
-        }
->>>>>>> 55061f5fffa3be41316a11563a193ac1069c183a
       );
 
       const data = await res.json();
