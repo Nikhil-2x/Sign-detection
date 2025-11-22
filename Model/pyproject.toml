@@ -1,7 +1,7 @@
 [project]
-name = "28-07-2025-sign-language"
+name = "Sign-language"
 version = "0.1.0"
-description = "A full walkthrough on training a sign language model."
+description = "Backend api for sign language model."
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
 dependencies = [

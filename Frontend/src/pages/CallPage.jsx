@@ -55,6 +55,7 @@ const CallPage = () => {
 
       const res = await fetch(
         "https://nick-localhost-sign-detect.hf.space/detect",
+        // "http://localhost:7860/detect",
         {
           method: "POST",
           body: form,

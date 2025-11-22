@@ -610,7 +610,8 @@
 .brand-name {
     font-size: 1.75rem;
     font-weight: 800;
-    font-family: "Monaco", monospace;
+    /*font-family: "Monaco", monospace;*/
+    font-family: "Courier New", Courier, monospace;
     letter-spacing: 0.05em;
     background: linear-gradient(135deg, #fff 0%, #e0e0e0 50%, #fff 100%);
     -webkit-background-clip: text;

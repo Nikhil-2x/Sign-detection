@@ -56,7 +56,16 @@ const HomePage = () => {
               <div className="team-channel-list__header gap-4">
                 <div className="brand-container">
                   <img src="/hello.png" alt="Logo" className="brand-logo" />
-                  <span className="brand-name">Sudo Bits</span>
+                  <span
+                    className="text-4xl font-extrabold tracking-wide
+                    font-[FiraCodeNF]
+                    bg-gradient-to-br from-white via-neutral-300 to-white
+                    bg-clip-text text-transparent
+                    drop-shadow-[0_2px_10px_rgba(255,255,255,0.1)]
+"
+                  >
+                    Fluent Meet
+                  </span>
                 </div>
                 <div className="user-button-wrapper">
                   <UserButton />

@@ -5,8 +5,12 @@ import { Canvas } from "@react-three/fiber";
 import { Suspense } from "react";
 import { Abhi } from "../components/Textured";
 import LightRays from "../components/LightRays";
+import VariableProximity from "@/components/VariableProximity";
+import { useRef } from "react";
 
 const AuthPage = () => {
+  const containerRef = useRef(null);
+
   return (
     <div className="auth-container">
       <LightRays
@@ -26,9 +30,20 @@ const AuthPage = () => {
       />
       <div className="auth-left">
         <div className="auth-hero">
-          <div className="brand-container">
+          <div ref={containerRef} className="brand-container">
             <img src="/hello.png" alt="Slap" className="brand-logo" />
-            <span className="brand-name">Connect</span>
+
+            <div ref={containerRef} className="relative text-4xl">
+              <VariableProximity
+                label="Fluent Meet"
+                className="variable-proximity-demo"
+                fromFontVariationSettings="'wght' 400, 'opsz' 9"
+                toFontVariationSettings="'wght' 1000, 'opsz' 40"
+                containerRef={containerRef}
+                radius={100}
+                falloff="linear"
+              />
+            </div>
           </div>
 
           <h1 className="hero-title !text-3xl">Bridging Silence</h1>
